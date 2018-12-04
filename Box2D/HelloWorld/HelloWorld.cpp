@@ -14,6 +14,7 @@
 #pragma comment(lib,"sfml-window.lib") 
 #pragma comment(lib,"sfml-network.lib") 
 #endif 
+
 /** We need this to easily convert between pixel and real-world coordinates*/
 static const float SCALE = 30.f;
 
@@ -23,11 +24,15 @@ void CreateGround(b2World& World, float X, float Y);
 /** Create the boxes */
 void CreateBox(b2World& World, int MouseX, int MouseY);
 
+void player(b2World& World,b2BodyDef BodyDef);
+
+void movebox(b2BodyDef& BodyDef);
+
 int main()
 {
 	/** Prepare the window */
-	sf::RenderWindow Window(sf::VideoMode(800, 600, 32), "Box2D and SFML");
-	Window.setFramerateLimit(60);
+	sf::RenderWindow m_Window(sf::VideoMode(800, 600, 32), "Box2D and SFML");
+	m_Window.setFramerateLimit(60);
 
 	/** Prepare the world */
 	b2Vec2 Gravity(0.f, 9.8f);
@@ -40,17 +45,27 @@ int main()
 	GroundTexture.loadFromFile("ground.png");
 	BoxTexture.loadFromFile("box.png");
 
-	while (Window.isOpen())
+	b2BodyDef m_playerBox;
+
+	player(World, m_playerBox);
+
+	while (m_Window.isOpen())
 	{
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		/*if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			int MouseX = sf::Mouse::getPosition(Window).x;
-			int MouseY = sf::Mouse::getPosition(Window).y;
+			int MouseX = sf::Mouse::getPosition(m_Window).x;
+			int MouseY = sf::Mouse::getPosition(m_Window).y;
 			CreateBox(World, MouseX, MouseY);
-		}
+		}*/
+
+		
+		//player(World, m_Window);
+		
+		movebox(m_playerBox);
+
 		World.Step(1 / 60.f, 8, 3);
 
-		Window.clear(sf::Color::White);
+		m_Window.clear(sf::Color::White);
 		int BodyCount = 0;
 		for (b2Body* BodyIterator = World.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
@@ -61,7 +76,7 @@ int main()
 				Sprite.setOrigin(16.f, 16.f);
 				Sprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
 				Sprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
-				Window.draw(Sprite);
+				m_Window.draw(Sprite);
 				++BodyCount;
 			}
 			else
@@ -71,10 +86,10 @@ int main()
 				GroundSprite.setOrigin(400.f, 8.f);
 				GroundSprite.setPosition(BodyIterator->GetPosition().x * SCALE, BodyIterator->GetPosition().y * SCALE);
 				GroundSprite.setRotation(180 / b2_pi * BodyIterator->GetAngle());
-				Window.draw(GroundSprite);
+				m_Window.draw(GroundSprite);
 			}
 		}
-		Window.display();
+		m_Window.display();
 	}
 
 	return 0;
@@ -89,11 +104,35 @@ void CreateBox(b2World& World, int MouseX, int MouseY)
 
 	b2PolygonShape Shape;
 	Shape.SetAsBox((32.f / 2) / SCALE, (32.f / 2) / SCALE);
+
 	b2FixtureDef FixtureDef;
 	FixtureDef.density = 1.f;
 	FixtureDef.friction = 0.7f;
 	FixtureDef.shape = &Shape;
 	Body->CreateFixture(&FixtureDef);
+}
+
+void player(b2World& World, b2BodyDef BodyDef)
+{
+		BodyDef.position = b2Vec2(100 / SCALE, 100 / SCALE);
+		BodyDef.type = b2_dynamicBody;
+		b2Body* dynamicBody = World.CreateBody(&BodyDef);
+
+		b2PolygonShape boxShape;
+		boxShape.SetAsBox((32.f / 2) / SCALE, (32.f / 2) / SCALE);
+
+		b2FixtureDef boxFixtureDef;
+		boxFixtureDef.shape = &boxShape;
+		boxFixtureDef.density = 1.f;
+		dynamicBody->CreateFixture(&boxFixtureDef);
+}
+
+void movebox(b2BodyDef & playerBox)
+{
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		playerBox.position = b2Vec2(400 / SCALE, 400 / SCALE);
+	}
 }
 
 void CreateGround(b2World& World, float X, float Y)
