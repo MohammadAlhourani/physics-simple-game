@@ -51,15 +51,6 @@ int main()
 
 	while (m_Window.isOpen())
 	{
-		/*if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		{
-			int MouseX = sf::Mouse::getPosition(m_Window).x;
-			int MouseY = sf::Mouse::getPosition(m_Window).y;
-			CreateBox(World, MouseX, MouseY);
-		}*/
-
-		
-		//player(World, m_Window);
 		
 		movebox(m_playerBox);
 
@@ -89,6 +80,7 @@ int main()
 				m_Window.draw(GroundSprite);
 			}
 		}
+
 		m_Window.display();
 	}
 
@@ -116,6 +108,7 @@ void player(b2World& World, b2BodyDef BodyDef)
 {
 		BodyDef.position = b2Vec2(100 / SCALE, 100 / SCALE);
 		BodyDef.type = b2_dynamicBody;
+
 		b2Body* dynamicBody = World.CreateBody(&BodyDef);
 
 		b2PolygonShape boxShape;
