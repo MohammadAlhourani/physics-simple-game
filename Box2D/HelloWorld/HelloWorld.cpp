@@ -1,5 +1,6 @@
 #include <SFML\Graphics.hpp>
 #include <Box2D\Box2D.h>
+#include <iostream>
 
 #ifdef _DEBUG 
 #pragma comment(lib,"sfml-graphics-d.lib") 
@@ -24,7 +25,7 @@ void CreateGround(b2World& World, float X, float Y);
 /** Create the boxes */
 void CreateBox(b2World& World, int MouseX, int MouseY);
 
-void player(b2World& World,b2BodyDef BodyDef);
+void player(b2World& World,b2BodyDef & BodyDef);
 
 void movebox(b2BodyDef& BodyDef);
 
@@ -45,19 +46,25 @@ int main()
 	GroundTexture.loadFromFile("ground.png");
 	BoxTexture.loadFromFile("box.png");
 
+	sf::Sprite PlayerSprite;
+	PlayerSprite.setTexture(BoxTexture);
+	PlayerSprite.setOrigin(16.f, 16.f);
+
 	b2BodyDef m_playerBox;
 
 	player(World, m_playerBox);
 
 	while (m_Window.isOpen())
 	{
-		
-		movebox(m_playerBox);
 
+		PlayerSprite.setPosition(m_playerBox.position.x, m_playerBox.position.y);
+		
 		World.Step(1 / 60.f, 8, 3);
 
 		m_Window.clear(sf::Color::White);
+
 		int BodyCount = 0;
+
 		for (b2Body* BodyIterator = World.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
 			if (BodyIterator->GetType() == b2_dynamicBody)
@@ -81,6 +88,10 @@ int main()
 			}
 		}
 
+		
+		movebox(m_playerBox);
+
+		m_Window.draw(PlayerSprite);
 		m_Window.display();
 	}
 
@@ -104,13 +115,15 @@ void CreateBox(b2World& World, int MouseX, int MouseY)
 	Body->CreateFixture(&FixtureDef);
 }
 
-void player(b2World& World, b2BodyDef BodyDef)
+void player(b2World& World, b2BodyDef & BodyDef)
 {
 		BodyDef.position = b2Vec2(100 / SCALE, 100 / SCALE);
 		BodyDef.type = b2_dynamicBody;
 
-		b2Body* dynamicBody = World.CreateBody(&BodyDef);
+		BodyDef.linearVelocity = b2Vec2(5, 5);
 
+		b2Body* dynamicBody = World.CreateBody(&BodyDef);
+		
 		b2PolygonShape boxShape;
 		boxShape.SetAsBox((32.f / 2) / SCALE, (32.f / 2) / SCALE);
 
@@ -124,7 +137,7 @@ void movebox(b2BodyDef & playerBox)
 {
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
-		playerBox.position = b2Vec2(400 / SCALE, 400 / SCALE);
+		playerBox.position = b2Vec2(sf::Mouse::getPosition().x / 1.5 , sf::Mouse::getPosition().y / 1.5 );
 	}
 }
 
