@@ -27,8 +27,6 @@ void CreateBox(b2World& World, int MouseX, int MouseY);
 
 void player(b2World& World,b2BodyDef & BodyDef);
 
-void movebox(b2BodyDef& BodyDef);
-
 int main()
 {
 	/** Prepare the window */
@@ -51,8 +49,21 @@ int main()
 	PlayerSprite.setOrigin(16.f, 16.f);
 
 	b2BodyDef m_playerBox;
+	m_playerBox.position = b2Vec2(400.0f / SCALE, 300.0f / SCALE);
+	m_playerBox.type = b2_dynamicBody;
+	b2Body* Body = World.CreateBody(&m_playerBox);
 
-	player(World, m_playerBox);
+	b2PolygonShape Shape;
+	Shape.SetAsBox((32.f / 2) / SCALE, (32.f / 2) / SCALE);
+
+	b2FixtureDef FixtureDef;
+	FixtureDef.density = 1.f;
+	FixtureDef.friction = 0.7f;
+	FixtureDef.shape = &Shape;
+	Body->CreateFixture(&FixtureDef);
+	
+
+	//player(World, m_playerBox);
 
 	while (m_Window.isOpen())
 	{
@@ -62,6 +73,16 @@ int main()
 		World.Step(1 / 60.f, 8, 3);
 
 		m_Window.clear(sf::Color::White);
+
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			//m_playerBox.position = b2Vec2(sf::Mouse::getPosition(m_Window).x, sf::Mouse::getPosition(m_Window).y);
+
+			//CreateBox(World, sf::Mouse::getPosition(m_Window).x, sf::Mouse::getPosition(m_Window).y);
+			m_playerBox.linearVelocity = b2Vec2(sf::Mouse::getPosition(m_Window).x - m_playerBox.position.x, sf::Mouse::getPosition(m_Window).y - m_playerBox.position.y);
+
+			
+		}
 
 		int BodyCount = 0;
 
@@ -88,8 +109,6 @@ int main()
 			}
 		}
 
-		
-		movebox(m_playerBox);
 
 		m_Window.draw(PlayerSprite);
 		m_Window.display();
@@ -133,13 +152,6 @@ void player(b2World& World, b2BodyDef & BodyDef)
 		dynamicBody->CreateFixture(&boxFixtureDef);
 }
 
-void movebox(b2BodyDef & playerBox)
-{
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-	{
-		playerBox.position = b2Vec2(sf::Mouse::getPosition().x / 1.5 , sf::Mouse::getPosition().y / 1.5 );
-	}
-}
 
 void CreateGround(b2World& World, float X, float Y)
 {
