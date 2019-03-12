@@ -22,6 +22,8 @@ static const float SCALE = 30.f;
 /** Create the base for the boxes to land */
 void CreateGround(b2World& World, float X, float Y);
 
+void CreateGround(b2World& World, float X, float Y, float angle);
+
 /** Create the boxes */
 void CreateBox(b2World& World, int MouseX, int MouseY);
 
@@ -37,6 +39,8 @@ int main()
 	b2Vec2 Gravity(0.f, 9.8f);
 	b2World World(Gravity);
 	CreateGround(World, 400.f, 500.f);
+	CreateGround(World, 0, 0, 90);
+	CreateGround(World, 800, 0, 90);
 
 	/** Prepare textures */
 	sf::Texture GroundTexture;
@@ -69,6 +73,8 @@ int main()
 	{
 
 		PlayerSprite.setPosition(m_playerBox.position.x, m_playerBox.position.y);
+		PlayerSprite.setRotation(Body->GetAngle() * 180 / b2_pi);
+		m_playerBox.position = b2Vec2(Body->GetPosition().x * SCALE, Body->GetPosition().y * SCALE);
 		
 		World.Step(1 / 60.f, 8, 3);
 
@@ -76,13 +82,26 @@ int main()
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			//m_playerBox.position = b2Vec2(sf::Mouse::getPosition(m_Window).x, sf::Mouse::getPosition(m_Window).y);
-
+			Body->ApplyForce( b2Vec2((sf::Mouse::getPosition(m_Window).x - 400) * 0.1, (sf::Mouse::getPosition(m_Window).y - 300) * 0.1), b2Vec2(0,0), true);
 			//CreateBox(World, sf::Mouse::getPosition(m_Window).x, sf::Mouse::getPosition(m_Window).y);
 			m_playerBox.linearVelocity = b2Vec2(sf::Mouse::getPosition(m_Window).x - m_playerBox.position.x, sf::Mouse::getPosition(m_Window).y - m_playerBox.position.y);
+		}
 
+		/*if (m_playerBox.position.x > 700)
+		{
+			Body->ApplyForce(b2Vec2(-25,0), b2Vec2(10, 10), 1);
 			
 		}
+		else if (m_playerBox.position.x < 100)
+		{
+			Body->ApplyForce(b2Vec2(25, 0), b2Vec2(10, 10), 1);
+		}
+		else if (m_playerBox.position.y < 100)
+		{
+			Body->ApplyForce(b2Vec2(0, 25), b2Vec2(10, 10), 1);
+		}*/
+
+		std::cout << m_playerBox.position.x << std::endl;
 
 		int BodyCount = 0;
 
@@ -157,6 +176,22 @@ void CreateGround(b2World& World, float X, float Y)
 {
 	b2BodyDef BodyDef;
 	BodyDef.position = b2Vec2(X / SCALE, Y / SCALE);
+	BodyDef.type = b2_staticBody;
+	b2Body* Body = World.CreateBody(&BodyDef);
+
+	b2PolygonShape Shape;
+	Shape.SetAsBox((800.f / 2) / SCALE, (16.f / 2) / SCALE);
+	b2FixtureDef FixtureDef;
+	FixtureDef.density = 0.f;
+	FixtureDef.shape = &Shape;
+	Body->CreateFixture(&FixtureDef);
+}
+
+void CreateGround(b2World& World, float X, float Y, float angle)
+{
+	b2BodyDef BodyDef;
+	BodyDef.position = b2Vec2(X / SCALE, Y / SCALE);
+	BodyDef.angle = angle * (b2_pi / 180.0f);
 	BodyDef.type = b2_staticBody;
 	b2Body* Body = World.CreateBody(&BodyDef);
 
